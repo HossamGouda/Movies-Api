@@ -49,10 +49,57 @@ exports.delete = async (req, res) => {
 
 exports.list = async (req, res) => {
   const page = req.query?.page || 1;
-  const limit = 2;
+  const limit = 20;
   const skip = (page - 1) * limit;
   const movies = await Movie.find().select("-reviews").skip(skip).limit(limit);
   const total = await Movie.countDocuments();
-  const pages = Math.ceil(total / limit).toFixed;
-  res.json({success: true, pages, data: movies});
+  const pages = Math.ceil(total / limit);
+  res.json({
+    success: true,
+    pages: pages,
+    data: movies,
+  });
+};
+
+exports.reviews = async (req, res) => {
+  res.json({
+    success: true,
+  });
+};
+
+exports.addReview = async (req, res) => {
+  const {id} = req.params;
+  const {comment, rate} = req.body;
+
+  const movie = await Movie.findById(id);
+  if (!movie) {
+    return res.status(404).send();
+  }
+
+  const isRated = movie.reviews.findIndex((m) => m.user == req.userId);
+
+  if (isRated > -1) {
+    return res.status(403).send({message: "Review is already added"});
+  }
+
+  const totalRate = movie.reviews.reduce((sum, review) => sum + review, 0);
+  const finalRate = (totalRate + rate) / (movie.reviews.length + 1);
+
+  await Movie.updateOne(
+    {_id: id},
+    {
+      $push: {
+        reviews: {
+          user: req.userId,
+          comment,
+          rate,
+        },
+      },
+      $set: {rate: finalRate},
+    }
+  );
+
+  res.status(201).json({
+    success: true,
+  });
 };

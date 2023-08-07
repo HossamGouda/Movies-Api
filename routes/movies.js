@@ -9,5 +9,7 @@ router.put("/:id", [auth.check, admin.check], controller.update);
 router.delete("/:id", [auth.check, admin.check], controller.delete);
 router.get("/", auth.check, controller.list);
 router.get("/:id", auth.check, controller.find);
+router.post("/:id/reviews", auth.check, controller.addReview);
+router.get("/:id/reviews", controller.reviews);
 
 module.exports = router;

@@ -62,8 +62,15 @@ exports.list = async (req, res) => {
 };
 
 exports.reviews = async (req, res) => {
+  const {id} = req.params;
+  const movie = await Movie.findById(id)
+    .select("-reviews._id")
+    .populate("reviews.user", "name");
+  if (!movie) res.status(404).send();
+
   res.json({
     success: true,
+    data: movie.reviews,
   });
 };
 

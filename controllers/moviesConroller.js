@@ -76,13 +76,15 @@ exports.addReview = async (req, res) => {
     return res.status(404).send();
   }
 
-  const isRated = movie.reviews.findIndex((m) => m.user == req.userId);
+  const isRated = movie.reviews.findIndex((m) => m.user === req.userId);
 
   if (isRated > -1) {
     return res.status(403).send({message: "Review is already added"});
   }
 
-  const totalRate = movie.reviews.reduce((sum, review) => sum + review, 0);
+  // const totalRate = movie.reviews.reduce((sum, review) => sum + review, 0);
+  // const finalRate = (totalRate + rate) / (movie.reviews.length + 1);
+  const totalRate = movie.reviews.reduce((sum, review) => sum + review.rate, 0);
   const finalRate = (totalRate + rate) / (movie.reviews.length + 1);
 
   await Movie.updateOne(
